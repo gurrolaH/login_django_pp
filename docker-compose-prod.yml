@@ -1,0 +1,61 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-prod
+
+    container_name: login-pp-app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./app:/app
+      - ./pruebas_aceptacion:/app/pruebas_aceptacion
+
+    command: python manage.py runserver 0.0.0.0:8000
+
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_USER_ADMIN: ${DB_USER_ADMIN}
+      DB_HOST: db  # Apunta directo al nombre del servicio de abajo, no a la variable externa
+      DEBUG: ${DEBUG}
+      SECRET_KEY: ${SECRET_KEY}
+      PYTHONIOENCODING: "utf-8"
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+      
+  db:
+    image: mariadb
+    container_name: pp-db
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+    ports:
+      - "127.0.0.1:3310:3306"
+
+    volumes:
+      - db:/var/lib/mysql
+
+    # Healthcheck estándar y seguro para MariaDB usando mariadb-admin
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  db:

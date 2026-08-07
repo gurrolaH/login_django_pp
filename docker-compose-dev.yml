@@ -1,0 +1,84 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-dev
+
+    container_name: login-pp-app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+
+    ports:
+      - "8000:8000"
+
+    
+    volumes:
+      - ./app:/app
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+
+    env_file:
+      - .env
+
+    command:
+      - sh
+      - -c
+      - |
+        until python -c "import socket; s=socket.socket(); s.settimeout(1); s.connect(('db', 3306)); s.close()" 2>/dev/null; do
+          echo 'Waiting for db...'
+          sleep 1
+        done
+        python manage.py runserver 0.0.0.0:8000
+
+    environment:
+      DB_HOST: db
+      PYTHONIOENCODING: "utf-8"
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+      
+    networks:
+      - pp_net
+
+  db:
+    image: mariadb:10.11.8
+    container_name: pp-db
+    restart: always
+
+    env_file:
+      - .env
+
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+    ports:
+      - "127.0.0.1:3310:3306"
+
+    volumes:
+      - db_data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      
+    networks:
+      - pp_net
+
+# Declaramos los volúmenes manejados por Docker
+volumes:
+  db_data:
+  static_data:
+  media_data:
+  
+
+# Declaramos una red privada para que se comuniquen de forma segura
+networks:
+  pp_net:
+    driver: bridge

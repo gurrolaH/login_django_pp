@@ -1,0 +1,19 @@
+# Base de datos (Configuración para MySQL y Django)
+DB_NAME=login-pp
+DB_USER=ppuser
+DB_USER_ADMIN=admin
+DB_PASSWORD=admin1234
+DB_ROOT_PASSWORD=admin1234
+DB_HOST=db
+DB_PORT=3306
+
+# Configuración de Dominio
+DOMAIN_NAME=login-practicas-profesionales.brahem.space
+# localhost y servidor
+ALLOWED_HOSTS=login-practicas-profesionales.brahem.space,localhost,127.0.0.1
+
+
+#  Configuración de Django
+DEBUG=True
+SECRET_KEY=django-insecure-^b30_3&(v9^fb!#d8g&$2l))4!m_%+z-+rfr)d7$$p!2@ufh^y9
+

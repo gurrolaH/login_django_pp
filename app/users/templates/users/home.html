@@ -1,0 +1,59 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Inicio - Nexo{% endblock %}
+
+{% block content %}
+<!-- Navbar Superior -->
+<header class="navbar">
+  <div class="brand-mark">
+    <div class="dot">H</div>
+    <div class="word" style="color: var(--text-primary);">HBGM</div>
+  </div>
+
+  <div class="avatar-group">
+    <!-- Círculo con la inicial del usuario -->
+    <div class="avatar-circle">
+      {{ user.username|slice:":1"|upper }}
+    </div>
+
+    <!-- Botón de logout mediante POST (por seguridad en Django) -->
+    <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+      {% csrf_token %}
+      <button type="submit" class="btn-logout">Cerrar sesión</button>
+    </form>
+  </div>
+</header>
+
+<!-- Contenedor Principal (Home Shell) -->
+<main class="home-shell">
+  <!-- Tarjeta de Bienvenida -->
+  <section class="welcome-card">
+    <p class="eyebrow">Panel de control</p>
+    <h1>Bienvenido, {{ user.username }} </h1>
+    <p>Has iniciado sesión correctamente. Desde aquí puedes administrar tu perfil y acceder a las funciones principales de Nexo.</p>
+  </section>
+
+  <!-- Grilla de información del usuario -->
+  <section class="info-grid">
+    <div class="info-item">
+      <p class="label">Usuario</p>
+      <p class="value">@{{ user.username }}</p>
+    </div>
+
+    <div class="info-item">
+      <p class="label">Correo Electrónico</p>
+      <p class="value">{{ user.email|default:"No especificado" }}</p>
+    </div>
+
+    <div class="info-item">
+      <p class="label">Estado de Cuenta</p>
+      <p class="value" style="color: var(--success-text);">Activa</p>
+    </div>
+
+    <div class="info-item">
+      <p class="label">Último acceso</p>
+      <p class="value">{{ user.last_login|date:"d/m/Y H:i" }}</p>
+    </div>
+  </section>
+</main>
+{% endblock %}

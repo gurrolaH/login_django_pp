@@ -1,0 +1,84 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Iniciar sesión - Nexo{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+  <!-- Panel Izquierdo: Branding y Mensaje de Bienvenida -->
+  <div class="auth-panel-brand">
+    <div class="brand-mark">
+      <div class="dot">H</div>
+      <div class="word">HBGM</div>
+    </div>
+
+    <div class="brand-tagline">
+      <h2>Bienvenido a las prácticas profesiones HBGM</h2>
+      <p>Accede a tu cuenta para gestionar tu perfil, explorar novedades y analizar el avance en tus PP.</p>
+    </div>
+
+    <!-- Red / Patrón decorativo (SVG) -->
+    <svg class="network-pattern" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" opacity="0.08">
+      <circle cx="200" cy="200" r="150" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6 6"/>
+      <circle cx="200" cy="200" r="100" stroke="#FFFFFF" stroke-width="1.5"/>
+      <circle cx="200" cy="200" r="50" stroke="#FFFFFF" stroke-width="1"/>
+      <circle cx="200" cy="50" r="6" fill="#FFFFFF"/>
+      <circle cx="300" cy="200" r="6" fill="#FFFFFF"/>
+      <circle cx="200" cy="350" r="6" fill="#FFFFFF"/>
+      <circle cx="100" cy="200" r="6" fill="#FFFFFF"/>
+    </svg>
+  </div>
+
+  <!-- Panel Derecho: Formulario de Login -->
+  <div class="auth-panel-form">
+    <div class="form-card">
+      
+      <!-- Marca visible solo en pantallas móviles -->
+      <div class="mobile-brand">
+        <div class="brand-mark">
+          <div class="dot">N</div>
+          <div class="word" style="color: var(--text-primary);">Nexo</div>
+        </div>
+      </div>
+
+      <h1>Iniciar sesión</h1>
+      <p class="subtitle">Ingresa tus credenciales para acceder a tu cuenta.</p>
+
+      <!-- Errores generales del formulario -->
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            
+            {% if field.help_text %}
+              <span class="help-text">{{ field.help_text }}</span>
+            {% endif %}
+            
+            {% if field.errors %}
+              <ul class="errorlist">
+                {% for error in field.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+
+      <div class="auth-switch">
+        ¿Aún no tienes cuenta? <a href="{% url 'register' %}">Crear cuenta</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

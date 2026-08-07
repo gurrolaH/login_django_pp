@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+.env
+
+# Docker y Bases de Datos
+.docker/
+data/
+mysql_data/
+mariadb_data/
+
+#Herramientas de Coadyuvancia y Testing
+.qodo/
+
+# Logs y Automatización
+*.log
+geckodriver.log

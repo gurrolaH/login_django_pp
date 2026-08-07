@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Prácticas Profesionales hbgm{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --li-blue: #0A66C2;
+    --li-blue-hover: #004182;
+    --li-navy-deep: #002E5C;
+    --li-navy-deepest: #001B36;
+    --bg: #F4F2EE;
+    --surface: #FFFFFF;
+    --text-primary: #1D2226;
+    --text-secondary: #56687A;
+    --border: #E0DFDC;
+    --success-bg: #E9F5EC; --success-text: #057642; --success-border: #B7E1C3;
+    --error-bg: #FBEAE6; --error-text: #B24020; --error-border: #F0C4B7;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --font-display: 'Manrope', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,20,40,.06);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important;}
+  }
+
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    color:var(--text-primary);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:var(--li-blue);}
+
+  /* ---------- Mensajes (Django messages framework) ---------- */
+  .messages{
+    list-style:none;
+    margin:0;
+    padding:14px 24px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+  .messages li{
+    position: relative;
+    padding:12px 16px;
+    border-radius:var(--radius);
+    font-size:14px;
+    font-weight:500;
+    margin-bottom:10px;
+    border:1px solid transparent;
+  }
+  .messages li.success{background:var(--success-bg); color:var(--success-text); border-color:var(--success-border);}
+  .messages li.error{background:var(--error-bg); color:var(--error-text); border-color:var(--error-border);}
+  .messages li.warning{background:#FFF6E5; color:#8A5A00; border-color:#F2DBA0;}
+  .messages li.info{background:#E8F2FC; color:var(--li-blue-hover); border-color:#C6E0F7;}
+  .messages li .message-close{
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .messages li .message-close:hover{
+    opacity: 0.75;
+  }
+  .messages li span{
+    display: inline-block;
+    padding-right: 26px;
+  }
+
+  /* ---------- Estructura de autenticación (split screen) ---------- */
+  .auth-shell{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    min-height:100vh;
+  }
+
+  .auth-panel-brand{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(160deg, var(--li-navy-deep) 0%, var(--li-navy-deepest) 100%);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:56px;
+  }
+
+  .brand-mark{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position:relative;
+    z-index:2;
+  }
+  .brand-mark .dot{
+    width:34px; height:34px;
+    border-radius:9px;
+    background:var(--li-blue);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:17px;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .brand-mark .word{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:19px;
+    letter-spacing:-0.01em;
+  }
+
+  .brand-tagline{
+    position:relative;
+    z-index:2;
+    max-width:380px;
+  }
+  .brand-tagline h2{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:30px;
+    line-height:1.25;
+    margin:0 0 12px;
+  }
+  .brand-tagline p{
+    font-size:15px;
+    line-height:1.6;
+    color:rgba(255,255,255,.72);
+    margin:0;
+  }
+
+  .network-pattern{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:1;
+  }
+
+  /* ---------- Panel de formulario ---------- */
+  .auth-panel-form{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 24px;
+    background:var(--surface);
+  }
+
+  .mobile-brand{
+    display:none;
+    align-items:center;
+    gap:10px;
+    margin-bottom:32px;
+  }
+
+  .form-card{
+    width:100%;
+    max-width:380px;
+  }
+  .form-card h1{
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:800;
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .form-card .subtitle{
+    color:var(--text-secondary);
+    margin:0 0 32px;
+    font-size:15px;
+    line-height:1.5;
+  }
+
+  form{margin:0;}
+
+  .field{
+    margin-bottom:18px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .field label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-primary);
+  }
+  .field input{
+    border:1.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    font-size:15px;
+    font-family:var(--font-body);
+    color:var(--text-primary);
+    background:var(--surface);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .field input::placeholder{color:#9CA8B3;}
+  .field input:focus{
+    outline:none;
+    border-color:var(--li-blue);
+    box-shadow:0 0 0 3px rgba(10,102,194,.15);
+  }
+  .field .help-text{
+    font-size:12px;
+    color:var(--text-secondary);
+  }
+  .field .errorlist{
+    list-style:none;
+    margin:2px 0 0;
+    padding:0;
+    color:var(--error-text);
+    font-size:13px;
+    font-weight:500;
+  }
+
+  .form-errors{
+    background:var(--error-bg);
+    border:1px solid var(--error-border);
+    color:var(--error-text);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    font-size:13.5px;
+    margin-bottom:20px;
+  }
+  .form-errors ul{margin:0; padding-left:18px;}
+
+  .btn-primary{
+    width:100%;
+    background:var(--li-blue);
+    color:#fff;
+    border:none;
+    border-radius:24px;
+    padding:13px 20px;
+    font-size:16px;
+    font-weight:700;
+    font-family:var(--font-body);
+    cursor:pointer;
+    transition:background .15s;
+    margin-top:6px;
+  }
+  .btn-primary:hover{background:var(--li-blue-hover);}
+  .btn-primary:focus-visible{outline:3px solid rgba(10,102,194,.35); outline-offset:2px;}
+
+  .auth-switch{
+    margin-top:26px;
+    text-align:center;
+    font-size:14px;
+    color:var(--text-secondary);
+  }
+  .auth-switch a{
+    color:var(--li-blue);
+    font-weight:700;
+    text-decoration:none;
+  }
+  .auth-switch a:hover{text-decoration:underline;}
+
+  /* ---------- Navbar (home) ---------- */
+  .navbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 32px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+  }
+  .avatar-group{display:flex; align-items:center; gap:14px;}
+  .avatar-circle{
+    width:36px; height:36px;
+    border-radius:50%;
+    background:var(--li-blue);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .btn-logout{
+    background:transparent;
+    border:1.5px solid var(--border);
+    color:var(--text-primary);
+    padding:8px 16px;
+    border-radius:20px;
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  .btn-logout:hover{border-color:var(--li-blue); color:var(--li-blue);}
+  .btn-logout:focus-visible{outline:3px solid rgba(10,102,194,.35); outline-offset:2px;}
+
+  /* ---------- Contenido home ---------- */
+  .home-shell{
+    max-width:760px;
+    margin:0 auto;
+    padding:48px 24px;
+  }
+  .welcome-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:36px;
+    margin-bottom:24px;
+  }
+  .welcome-card .eyebrow{
+    font-size:13px;
+    font-weight:700;
+    color:var(--li-blue);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin:0 0 6px;
+  }
+  .welcome-card h1{
+    font-family:var(--font-display);
+    font-size:26px;
+    font-weight:800;
+    margin:0 0 10px;
+  }
+  .welcome-card p{
+    color:var(--text-secondary);
+    font-size:15px;
+    line-height:1.6;
+    margin:0;
+  }
+
+  .info-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .info-item{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .info-item .label{
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-secondary);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin:0 0 6px;
+  }
+  .info-item .value{
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-primary);
+    margin:0;
+    word-break:break-word;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px){
+    .auth-shell{grid-template-columns:1fr;}
+    .auth-panel-brand{display:none;}
+    .mobile-brand{display:flex;}
+    .info-grid{grid-template-columns:1fr;}
+  }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="{{ message.tags }}">
+        <span>{{ message }}</span>
+        <button type="button" class="message-close" aria-label="Cerrar mensaje">×</button>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% block content %}{% endblock %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const messages = document.querySelectorAll('.messages li');
+    messages.forEach(function (item) {
+      const close = item.querySelector('.message-close');
+      if (close) {
+        close.addEventListener('click', function () {
+          item.remove();
+        });
+      }
+      setTimeout(function () {
+        item.remove();
+      }, 6000);
+    });
+  });
+</script>
+</body>
+</html>

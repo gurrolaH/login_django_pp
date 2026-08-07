@@ -1,0 +1,64 @@
+FROM debian:trixie-slim
+
+# Correr esoto comando dentro del conteneddor.
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y \
+    apache2 \
+    python3 \
+    python3-pip \
+    python3-venv \
+    libmariadb-dev \
+    libapache2-mod-wsgi-py3 \
+    pkg-config \
+    gcc\
+    chromium \
+    chromium-driver \
+    fonts-liberation \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
+    libcairo2-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Variables de entorno dentro del debian.
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV TZ=America/Mexico_City
+
+# Comando para configurar la zona horaria.
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# CAMBIO DE PUERTOS PRECISO
+RUN printf "Listen 8000\n" > /etc/apache2/ports.conf 
+
+
+COPY ./requirements-dev.txt /app/
+
+# Asignamos el directorio de trabajo.
+WORKDIR /app
+
+# Crea el entorno virtual de forma fija.
+RUN python3 -m venv /env
+
+# Activa de forma permanente añadiendo añadiento al path.
+ENV PATH="/env/bin:$PATH"
+
+# Instalamos estos lo que contenga en estos archivos.
+RUN /env/bin/pip install --upgrade pip
+RUN /env/bin/pip install -r requirements-dev.txt
+
+# Copia tu archivo de configuración de Apache al contenedor 
+COPY ./docker/apache.conf /etc/apache2/sites-available/apache.conf
+
+# Desactiva el sitio por defecto de Debian y activa el de Django
+RUN a2dissite 000-default.conf && a2ensite apache.conf
+
+
+EXPOSE 8000
+
+# Comando para correr dentro del contenedor.
+CMD ["apachectl", "-D", "FOREGROUND"]
+
