@@ -1,6 +1,7 @@
 ## README: Desarrollo con Docker Compose
 
 ### 1. Antes de empezar
+- Estar en la segunda carpeta de: \login_django_pp
 
 - Tener docker instalado y corriendo.
 
@@ -60,53 +61,3 @@ Abre en tu navegador:
 ```text
 http://localhost:8000
 ```
-
-### 8. Comandos útiles
-
-- Ver logs del app:
-
-```bash
-docker compose -f docker-compose-dev.yml logs -f app
-```
-
-- Abrir una shell dentro del contenedor app:
-
-```bash
-docker compose -f docker-compose-dev.yml exec app sh
-```
-
-- Apagar los contenedores:
-
-```bash
-docker compose -f docker-compose-dev.yml down
-```
-
-### 9. Rebuild solo cuando cambies Dockerfile o dependencias
-
-```bash
-docker compose -f docker-compose-dev.yml build
-docker compose -f docker-compose-dev.yml up -d
-```
-
-### 10. Notas específicas del proyecto
-
-- El servicio de desarrollo app monta `./app:/app`.
-- El comando de arranque en desarrollo usa:
-  - `python manage.py runserver 0.0.0.0:8000`
-- El servicio `db` usa MariaDB en el contenedor `pp-db`.
-
----
-
-## Resumen rápido
-
-```bash
-cd d:/practicas_profesionales/login_django_01
-git pull origin main
-cp env-example.txt .env
-docker compose -f docker-compose-dev.yml up -d --build
-docker compose -f docker-compose-dev.yml ps
-docker compose -f docker-compose-dev.yml exec app python manage.py makemigrations
-docker compose -f docker-compose-dev.yml exec app python manage.py migrate
-```
-
-Con esto deberías tener el entorno listo y `localhost:8000` funcionando.
