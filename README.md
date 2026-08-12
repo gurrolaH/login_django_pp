@@ -61,3 +61,7 @@ Abre en tu navegador:
 ```text
 http://localhost:8000
 ```
+
+### Diagrama relacional del sistema
+
+![Diagrama Relacional](docs/diagrama-bd.svg)
