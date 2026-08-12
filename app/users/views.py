@@ -1,6 +1,7 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
@@ -33,6 +34,7 @@ def logout_view(request):
 
 
 @login_required
+@never_cache
 def home_view(request):
     from django.shortcuts import render
     return render(request, 'users/home.html')
