@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<!-- Evitar destello (FOUC) del sidebar colapsado -->
+<script>
+  (function () {
+    const savedSidebar = localStorage.getItem('sidebarCollapsed');
+    const startCollapsed = savedSidebar === 'true';
+    if (startCollapsed) {
+      document.documentElement.classList.add('sidebar-is-collapsed');
+    }
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}Prácticas Profesionales hbgm{% endblock %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <style>
   :root{
     --li-blue: #0A66C2;
@@ -378,22 +389,245 @@
     .mobile-brand{display:flex;}
     .info-grid{grid-template-columns:1fr;}
   }
+
+  /* ================= SIDEBAR ================= */
+  .app-shell{
+    display:flex;
+    min-height:100vh;
+  }
+
+  .sidebar-custom{
+    position:fixed;
+    top:0;
+    left:0;
+    height:100vh;
+    width:264px;
+    z-index:1050;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+    overflow-x:hidden;
+    background:linear-gradient(160deg, var(--li-navy-deep) 0%, var(--li-navy-deepest) 100%);
+    color:#fff;
+    padding:20px 16px;
+    box-shadow:4px 0 24px rgba(0,20,40,.12);
+    transition:width .25s ease;
+  }
+
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:22px;
+    padding:0 4px;
+  }
+  .sidebar-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    min-width:0;
+  }
+  .sidebar-brand .brand-dot{
+    width:34px; height:34px;
+    border-radius:9px;
+    background:var(--li-blue);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .sidebar-brand .brand-word{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:17px;
+    letter-spacing:-0.01em;
+    color:#fff;
+    white-space:nowrap;
+  }
+
+  .sidebar-toggle-btn{
+    flex-shrink:0;
+    width:32px; height:32px;
+    border:none;
+    border-radius:8px;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .sidebar-toggle-btn:hover{background:rgba(255,255,255,.18);}
+  .sidebar-toggle-btn:focus-visible{outline:2px solid rgba(255,255,255,.5); outline-offset:2px;}
+
+  .sidebar-nav{flex:1;}
+  .sidebar-list{list-style:none; margin:0; padding:0;}
+  .sidebar-item{margin-bottom:4px;}
+
+  .sidebar-link{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 12px;
+    border-radius:8px;
+    color:rgba(255,255,255,.78);
+    text-decoration:none;
+    font-size:14.5px;
+    font-weight:600;
+    white-space:nowrap;
+    transition:background .15s, color .15s;
+  }
+  .sidebar-link:hover{
+    background:rgba(255,255,255,.08);
+    color:#fff;
+  }
+  .sidebar-link.active{
+    background:var(--li-blue);
+    color:#fff;
+  }
+  .sidebar-icon{
+    font-size:17px;
+    flex-shrink:0;
+    width:20px;
+    text-align:center;
+  }
+
+  .sidebar-footer{
+    margin-top:auto;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.12);
+  }
+
+  /* --- Estado retraído --- */
+  html.sidebar-is-collapsed .sidebar-custom{
+    width:76px;
+  }
+  html.sidebar-is-collapsed .sidebar-header{
+    justify-content:center;
+  }
+  html.sidebar-is-collapsed .sidebar-brand{
+    display:none;
+  }
+  html.sidebar-is-collapsed .sidebar-text{
+    display:none;
+  }
+  html.sidebar-is-collapsed .sidebar-link{
+    justify-content:center;
+    padding:11px 0;
+  }
+  html.sidebar-is-collapsed .sidebar-icon{
+    margin:0;
+    font-size:19px;
+  }
+
+  /* --- Contenido principal desplazado por el sidebar --- */
+  .main-content{
+    margin-left:264px;
+    width:calc(100% - 264px);
+    min-width:0;
+    transition:margin-left .25s ease, width .25s ease;
+  }
+  html.sidebar-is-collapsed .main-content{
+    margin-left:76px;
+    width:calc(100% - 76px);
+  }
+
+  @media (max-width: 860px){
+    .sidebar-custom{width:76px;}
+    .sidebar-brand .brand-word,
+    .sidebar-text{display:none;}
+    .sidebar-header{justify-content:center;}
+    .sidebar-link{justify-content:center; padding:11px 0;}
+    .main-content{margin-left:76px; width:calc(100% - 76px);}
+  }
 </style>
 {% block extra_head %}{% endblock %}
 </head>
 <body>
-{% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li class="{{ message.tags }}">
-        <span>{{ message }}</span>
-        <button type="button" class="message-close" aria-label="Cerrar mensaje">×</button>
-      </li>
-    {% endfor %}
-  </ul>
+{% if not request.user.is_authenticated %}
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">
+          <span>{{ message }}</span>
+          <button type="button" class="message-close" aria-label="Cerrar mensaje">×</button>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% else %}
+  <div class="app-shell">
+    <aside id="sidebarMenu" class="sidebar-custom">
+      <div class="sidebar-header">
+        <a href="#" class="sidebar-brand">
+          <span class="brand-dot">hb</span>
+          <span class="brand-word sidebar-text">hbgm</span>
+        </a>
+        <button id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Ocultar/Mostrar menú" aria-label="Alternar menú">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul class="sidebar-list">
+          <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+              <i class="bi bi-truck sidebar-icon"></i>
+              <span class="sidebar-text">Proveedor</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+              <i class="bi bi-box-seam sidebar-icon"></i>
+              <span class="sidebar-text">Producto</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+              <i class="bi bi-cart-check sidebar-icon"></i>
+              <span class="sidebar-text">Compra productos</span>
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+              <i class="bi bi-people sidebar-icon"></i>
+              <span class="sidebar-text">Empleados</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="sidebar-link">
+          <i class="bi bi-box-arrow-right sidebar-icon"></i>
+          <span class="sidebar-text">Cerrar sesión</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="{{ message.tags }}">
+              <span>{{ message }}</span>
+              <button type="button" class="message-close" aria-label="Cerrar mensaje">×</button>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
 {% endif %}
 
 {% block content %}{% endblock %}
+
+{% if request.user.is_authenticated %}
+    </div>
+  </div>
+{% endif %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const messages = document.querySelectorAll('.messages li');
@@ -407,6 +641,28 @@
       setTimeout(function () {
         item.remove();
       }, 6000);
+    });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+
+    // Retracción / expansión del sidebar (persistida en localStorage)
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        const isNowCollapsed = document.documentElement.classList.toggle('sidebar-is-collapsed');
+        localStorage.setItem('sidebarCollapsed', isNowCollapsed);
+      });
+    }
+
+    // Resaltar el enlace activo según la ruta actual
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('#sidebarMenu .sidebar-link').forEach(function (link) {
+      const href = link.getAttribute('href');
+      if (href && href !== '#' && currentPath === href) {
+        link.classList.add('active');
+      }
     });
   });
 </script>
