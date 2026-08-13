@@ -6,8 +6,11 @@ class Proveedor(models.Model):
     # Llave primaria:
     id_proveedor = models.BigAutoField(primary_key=True)
 
-    nombre = models.CharField(max_length=150)
-
+    nombre = models.CharField(
+        max_length=150,
+        default='ANDREA'
+    )
+    
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(max_length=150, blank=True)
     direccion = models.CharField(max_length=255, blank=True)
@@ -16,7 +19,7 @@ class Proveedor(models.Model):
     activo = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'proveedor'
+        db_table = 'proveedor'  # Nombre de la tabla
         ordering = ['nombre']
 
     def __str__(self):
