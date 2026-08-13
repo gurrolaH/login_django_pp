@@ -82,6 +82,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'compra',
+    'detalle_compra',
+    'empleado',
+    'producto',
+    'proveedor',
+    
 ]
 
 if DEBUG:  # Se agrega
