@@ -1,5 +1,6 @@
 from django.db import models
 
+from producto.models import Producto
 from proveedor.models import Proveedor
 from empleado.models import Empleado
 
@@ -63,4 +64,42 @@ class Compra(models.Model):
 
     def __str__(self):
         return f'Compra #{self.id_compra}'
-        
+
+
+class DetalleCompra(models.Model): # Este model permite manejar a detalle compra que es del mismo dominio de compra.
+
+    id_detalle_compra = models.BigAutoField(primary_key=True)
+
+    compra = models.ForeignKey(
+        Compra,
+        on_delete=models.CASCADE,
+        related_name='detalles'
+    )
+
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.PROTECT,
+        related_name='detalles_compra'
+    )
+
+    cantidad = models.PositiveIntegerField()
+
+    precio_unitario = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    subtotal = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    class Meta:
+        db_table = 'detalle_compra'
+        ordering = ['id_detalle_compra']
+
+    def __str__(self):
+        return (
+            f'Compra #{self.compra.id_compra} - '
+            f'{self.producto.nombre}'
+        )
