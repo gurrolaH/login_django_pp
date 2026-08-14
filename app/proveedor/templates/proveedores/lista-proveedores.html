@@ -13,7 +13,7 @@
                 <h1>Proveedores</h1>
             </div>
             <!-- Botón opcional para crear un nuevo registro en el futuro -->
-            <a href="#" class="btn-primary" style="display: inline-block; width: auto; text-decoration: none; padding: 10px 20px; font-size: 14px;">
+            <a href="{% url 'proveedor:crear' %}" class="btn-primary" style="display: inline-block; width: auto; text-decoration: none; padding: 10px 20px; font-size: 14px;">
                 + Nuevo Proveedor
             </a>
         </div>
@@ -24,17 +24,15 @@
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14.5px;">
                 <thead>
-                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-secondary);">
-                        <th style="padding: 12px 14px; font-weight: 600;">ID</th>
-                        <th style="padding: 12px 14px; font-weight: 600;">Nombre / Razón Social</th>
+                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-secondary);">                        
+                        <th style="padding: 12px 14px; font-weight: 600;">Distribuidor</th>
                         <th style="padding: 12px 14px; font-weight: 600;">Teléfono</th>
                         <th style="padding: 12px 14px; font-weight: 600; text-align: right;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for proveedor in proveedores %}
-                        <tr style="border-bottom: 1px solid var(--border);">
-                            <td style="padding: 14px; color: var(--text-secondary);">{{ proveedor.id }}</td>
+                        <tr style="border-bottom: 1px solid var(--border);">                            
                             <td style="padding: 14px; font-weight: 600; color: var(--text-primary);">{{ proveedor.nombre }}</td>
                             <td style="padding: 14.5px; color: var(--text-secondary);">{{ proveedor.telefono|default:"No registrado" }}</td>
                             <td style="padding: 14px; text-align: right;">

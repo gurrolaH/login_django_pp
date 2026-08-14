@@ -1,0 +1,40 @@
+{% extends 'users/base.html' %}
+
+{% block title %} Registrar Proveedor {% endblock %}
+
+{% block content %}
+<div class="home-shell" style="max-width: 600px;">
+    <div class="welcome-card">
+        <p class="eyebrow">Módulo Proveedores</p>
+        <h1>Nuevo Proveedor</h1>
+        <p style="margin-bottom: 24px;">Ingresa la información para registrar un nuevo proveedor en el sistema.</p>
+
+        <form method="POST" action="">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="errorlist">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn-primary">Guardar Proveedor</button>
+                <a href="{% url 'proveedor:lista' %}" class="btn-logout" style="text-decoration: none; text-align: center; line-height: 24px;">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
