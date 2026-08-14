@@ -13,12 +13,16 @@ class Empleado(models.Model):
 
     telefono = models.CharField(
         max_length=20,
-        blank=True
+        blank=True,
+        null=True,      
+        unique=True     
     )
 
     email = models.EmailField(
         max_length=150,
-        blank=True
+        blank=True,
+        null=True,      
+        unique=True     
     )
 
     puesto = models.CharField(
