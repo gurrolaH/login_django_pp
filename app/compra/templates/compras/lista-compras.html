@@ -1,0 +1,90 @@
+{% extends 'users/base.html' %}
+
+{% block title %} Lista de Compras {% endblock %}
+
+{% block content %}
+<div class="home-shell" style="max-width: 1200px;">
+    <div class="welcome-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <p class="eyebrow">Módulo de Compras</p>
+                <h1>Compras</h1>
+            </div>
+            <a href="#" class="btn-primary" style="display: inline-block; width: auto; text-decoration: none; padding: 10px 20px; font-size: 14px;">
+                + Nueva Compra
+            </a>
+        </div>
+
+        <p style="margin-bottom: 24px;">Listado general de compras registradas con sus detalles.</p>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14.5px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-secondary);">
+                        <th style="padding: 12px 14px; font-weight: 600;">ID</th>
+                        <th style="padding: 12px 14px; font-weight: 600;">Proveedor</th>
+                        <th style="padding: 12px 14px; font-weight: 600;">Empleado</th>
+                        <th style="padding: 12px 14px; font-weight: 600;">Fecha</th>
+                        <th style="padding: 12px 14px; font-weight: 600;">Estado</th>
+                        <th style="padding: 12px 14px; font-weight: 600;">Total</th>
+                        <th style="padding: 12px 14px; font-weight: 600; text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compra in compras %}
+                        <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
+                            <td style="padding: 14px; color: var(--text-secondary);">#{{ compra.id_compra }}</td>
+                            <td style="padding: 14px; font-weight: 600; color: var(--text-primary);">{{ compra.proveedor.nombre }}</td>
+                            <td style="padding: 14px; color: var(--text-secondary);">{{ compra.empleado.nombre }} {{ compra.empleado.apellido }}</td>
+                            <td style="padding: 14px; color: var(--text-secondary);">{{ compra.fecha_compra|date:'d/m/Y H:i' }}</td>
+                            <td style="padding: 14px; color: var(--text-secondary);">{{ compra.estado }}</td>
+                            <td style="padding: 14px; font-weight: 700; color: var(--text-primary);">${{ compra.total }}</td>
+                            <td style="padding: 14px; text-align: right;">
+                                <a href="#" style="color: var(--li-blue); text-decoration: none; font-weight: 600; font-size: 13.5px;">Ver detalles</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" style="padding: 0 14px 18px 14px;">
+                                <div style="background: #f7f9fb; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
+                                    <strong style="display: block; margin-bottom: 8px; color: var(--text-primary);">Detalle de compra:</strong>
+                                    {% if compra.detalles.all %}
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                            <thead>
+                                                <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary);">
+                                                    <th style="padding: 8px 10px; text-align: left;">Producto</th>
+                                                    <th style="padding: 8px 10px; text-align: left;">Cantidad</th>
+                                                    <th style="padding: 8px 10px; text-align: left;">P. Unitario</th>
+                                                    <th style="padding: 8px 10px; text-align: left;">Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for detalle in compra.detalles.all %}
+                                                    <tr>
+                                                        <td style="padding: 8px 10px;">{{ detalle.producto.nombre }}</td>
+                                                        <td style="padding: 8px 10px;">{{ detalle.cantidad }}</td>
+                                                        <td style="padding: 8px 10px;">${{ detalle.precio_unitario }}</td>
+                                                        <td style="padding: 8px 10px;">${{ detalle.subtotal }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% else %}
+                                        <span style="color: var(--text-secondary);">No hay detalles registrados para esta compra.</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                <i class="bi bi-inbox" style="font-size: 28px; display: block; margin-bottom: 8px;"></i>
+                                No hay compras registradas en la base de datos.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
