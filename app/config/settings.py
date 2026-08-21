@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'producto',
     'proveedor',
     'inventario',
+    'cliente'
     
 ]
 
