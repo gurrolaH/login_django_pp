@@ -1,0 +1,106 @@
+{% extends 'users/base.html' %}
+
+{% block title %} Registrar Compra {% endblock %}
+
+{% block content %}
+<div class="home-shell" style="max-width: 1000px;">
+    <div class="welcome-card">
+        <p class="eyebrow">Módulo Compras</p>
+        <h1>Nueva Compra</h1>
+        <p style="margin-bottom: 24px;">Registra la compra y agrega los productos que la conforman.</p>
+
+        <form method="POST" action="">
+            {% csrf_token %}
+
+            {% if compra_form.non_field_errors %}
+                <div class="form-errors">
+                    {{ compra_form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                {% for field in compra_form %}
+                    <div class="field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="errorlist">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <h3 style="margin: 24px 0 12px;">Detalle de la compra</h3>
+
+            <div id="formset-container">
+                {{ detalle_formset.management_form }}
+
+                {% for form in detalle_formset %}
+                    <div class="detalle-compra-row" style="border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #f9fafb;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+                            {% for field in form %}
+                                <div class="field">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="errorlist">
+                                            {{ field.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="add-product-btn" class="btn-logout" style="margin-bottom: 20px;">+ Agregar producto</button>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn-primary">Guardar Compra</button>
+                <a href="{% url 'compra:lista' %}" class="btn-logout" style="text-decoration: none; text-align: center; line-height: 24px;">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('formset-container');
+    const addButton = document.getElementById('add-product-btn');
+    const totalForms = document.querySelector('#id_detalles-TOTAL_FORMS');
+
+    if (addButton && container && totalForms) {
+      addButton.addEventListener('click', function () {
+        const formRows = container.querySelectorAll('.detalle-compra-row');
+        const currentCount = formRows.length;
+        const maxForms = parseInt(document.querySelector('#id_detalles-MAX_NUM_FORMS')?.value || '1000', 10);
+
+        if (currentCount >= maxForms) {
+          alert('Has alcanzado el máximo de productos para esta compra.');
+          return;
+        }
+
+        const templateRow = formRows[0].cloneNode(true);
+        templateRow.querySelectorAll('input, select').forEach(function (element) {
+          const name = element.getAttribute('name');
+          const id = element.getAttribute('id');
+          if (name && id) {
+            const newIndex = currentCount;
+            element.setAttribute('name', name.replace(/\d+/, newIndex));
+            element.setAttribute('id', id.replace(/\d+/, newIndex));
+            if (element.type !== 'hidden') {
+              element.value = '';
+            }
+          }
+        });
+
+        container.appendChild(templateRow);
+        totalForms.value = String(currentCount + 1);
+      });
+    }
+  });
+</script>
+{% endblock %}

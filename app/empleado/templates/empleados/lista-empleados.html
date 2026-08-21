@@ -36,7 +36,11 @@
                             <td style="padding: 14px; font-weight: 600; color: var(--text-primary);">{{ empleado.nombre }}</td>
                             <td style="padding: 14.5px; color: var(--text-secondary);">{{ empleado.telefono|default:"No registrado" }}</td>
                             <td style="padding: 14px; text-align: right;">
-                                <a href="#" style="color: var(--li-blue); text-decoration: none; font-weight: 600; font-size: 13.5px;">Ver detalles</a>
+                                <a href="{% url 'empleado:actualizar' empleado.id_empleado %}" 
+                                title="Editar empleado"
+                                style="color: var(--li-blue); text-decoration: none; font-size: 16px; padding: 4px 8px; display: inline-block;">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
                             </td>
                         </tr>
                     {% empty %}
