@@ -40,11 +40,14 @@
                             <td style="padding: 14px; color: var(--text-secondary);">{{ compra.estado }}</td>
                             <td style="padding: 14px; font-weight: 700; color: var(--text-primary);">${{ compra.total }}</td>
                             <td style="padding: 14px; text-align: right;">
-                                <a href="#" style="color: var(--li-blue); text-decoration: none; font-weight: 600; font-size: 13.5px;">Ver detalles</a>
+                                <!-- Botón-icono que abre el modal con los detalles de la compra -->
+                                <button type="button" class="icon-btn" onclick="openCompraDetalles('{{ compra.id_compra }}')" title="Ver detalles">
+                                    <i class="bi bi-list" aria-hidden="true" style="font-size:18px; color:var(--li-blue);"></i>
+                                </button>
                             </td>
                         </tr>
-                        <!--
-                        <tr>
+                        <!-- Hidden: Detalles embebidos para cada compra (se muestran en modal) -->
+                        <tr style="display:none;" id="compra-detalles-{{ compra.id_compra }}">
                             <td colspan="7" style="padding: 0 14px 18px 14px;">
                                 <div style="background: #f7f9fb; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
                                     <strong style="display: block; margin-bottom: 8px; color: var(--text-primary);">Detalle de compra:</strong>
@@ -60,11 +63,17 @@
                                             </thead>
                                             <tbody>
                                                 {% for detalle in compra.detalles.all %}
-                                                    <tr>
+                                                    <tr data-detalle-id="{{ detalle.id_detalle_compra }}">
                                                         <td style="padding: 8px 10px;">{{ detalle.producto.nombre }}</td>
                                                         <td style="padding: 8px 10px;">{{ detalle.cantidad }}</td>
                                                         <td style="padding: 8px 10px;">${{ detalle.precio_unitario }}</td>
                                                         <td style="padding: 8px 10px;">${{ detalle.subtotal }}</td>
+                                                        <td style="padding: 8px 10px; text-align: right; width:72px;">
+                                                            <!-- Botón-icono para cancelar este renglón (UI) -->
+                                                            <button type="button" class="icon-cancel-row" onclick="confirmCancelDetalle(' {{ detalle.id_detalle_compra }} ', this )" title="Cancelar renglón">
+                                                                <i class="bi bi-x-circle" style="color:var(--danger,#d9534f); font-size:18px;"></i>
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -74,7 +83,7 @@
                                     {% endif %}
                                 </div>
                             </td>
-                        </tr>-->
+                        </tr>
                     {% empty %}
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">
@@ -88,4 +97,131 @@
         </div>
     </div>
 </div>
+        <!-- Modal estructura (mejorada) -->
+        <style>
+            /* Estilos del modal */
+            #compra-detalles-modal { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; z-index: 9999; }
+            #compra-detalles-modal .modal-card { background: white; width: 92%; max-width: 920px; margin: auto; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+            #compra-detalles-modal .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+            #compra-detalles-modal .modal-title { margin:0; font-size:18px; }
+            #compra-detalles-modal .modal-body { padding: 18px; max-height: 70vh; overflow: auto; }
+            #compra-detalles-modal .modal-footer { padding: 12px 18px; border-top: 1px solid var(--border); text-align: right; }
+
+            /* Botón-icono limpio */
+            .icon-btn { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; }
+            .icon-btn:hover { background: rgba(0,0,0,0.04); }
+
+            /* Botón de cancelar renglón */
+            .icon-cancel-row { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; }
+            .icon-cancel-row:hover { background: rgba(217,83,79,0.06); }
+
+            /* Botón cancelar compra (cabecera) */
+            .btn-cancel-compra { display: inline-flex; align-items: center; gap:6px; padding:6px 10px; border-radius:6px; }
+
+            /* Estado visual de renglón cancelado */
+            .row-cancelled { opacity: 0.5; text-decoration: line-through; }
+
+            /* Tabla de detalles dentro del modal */
+            #compra-detalles-modal table { width: 100%; border-collapse: collapse; font-size: 14px; }
+            #compra-detalles-modal th, #compra-detalles-modal td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        </style>
+
+        <div id="compra-detalles-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 class="modal-title">Detalle de Compra</h3>
+                    <!-- Botón para cancelar toda la compra (UI) -->
+                    <button type="button" class="btn-cancel-compra" onclick="confirmCancelCompra()" title="Cancelar toda la compra" style="margin-right:12px; background:none; border:none; cursor:pointer;">
+                        <i class="bi bi-x-lg" style="vertical-align:middle; color:var(--danger,#d9534f);"></i>
+                        <span style="margin-left:6px; font-weight:600; color:var(--danger,#d9534f);">Cancelar compra</span>
+                    </button>
+                    <button onclick="closeCompraDetalles()" aria-label="Cerrar modal" style="background:none; border:none; font-size:18px; cursor:pointer;">✕</button>
+                </div>
+                <div id="compra-detalles-modal-body" class="modal-body"></div>
+                <div class="modal-footer">
+                    <button onclick="closeCompraDetalles()" class="btn-secondary">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Muestra el modal y copia el contenido del bloque oculto correspondiente
+            function openCompraDetalles(compraId) {
+                var hiddenRow = document.getElementById('compra-detalles-' + compraId);
+                var modal = document.getElementById('compra-detalles-modal');
+                var body = document.getElementById('compra-detalles-modal-body');
+                if (!hiddenRow) return;
+                // Copiamos sólo el interior del contenedor (evitar duplicar <tr>)
+                var contenido = hiddenRow.querySelector('div').innerHTML;
+                body.innerHTML = contenido;
+                modal.style.display = 'flex';
+                // prevenir scroll del body detrás del modal
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeCompraDetalles() {
+                var modal = document.getElementById('compra-detalles-modal');
+                modal.style.display = 'none';
+                document.getElementById('compra-detalles-modal-body').innerHTML = '';
+                document.body.style.overflow = '';
+            }
+
+            // Cerrar modal al presionar ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeCompraDetalles();
+            });
+
+            // Mantener el id de compra actualmente mostrado (para acciones)
+            var currentCompraId = null;
+
+            function openCompraDetalles(compraId) {
+                currentCompraId = compraId;
+                var hiddenRow = document.getElementById('compra-detalles-' + compraId);
+                var modal = document.getElementById('compra-detalles-modal');
+                var body = document.getElementById('compra-detalles-modal-body');
+                if (!hiddenRow) return;
+                var contenido = hiddenRow.querySelector('div').innerHTML;
+                body.innerHTML = contenido;
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Confirmación y acción visual para cancelar un detalle (UI-only)
+            function confirmCancelDetalle(detalleId, btn) {
+                if (!confirm('¿Confirmas cancelar este renglón de la compra?')) return;
+                // Marcar visualmente la fila como cancelada
+                var row = btn.closest('tr');
+                if (row) {
+                    row.classList.add('row-cancelled');
+                    // reemplazar el icono por un indicador
+                    btn.innerHTML = '<i class="bi bi-check-circle" style="color:var(--success,#28a745); font-size:18px;"></i>';
+                    btn.disabled = true;
+                }
+                // TODO: aquí puedes llamar al backend con fetch para persistir la cancelación
+                // fetch('/api/compra/detalle/' + detalleId + '/cancelar/', { method: 'POST' })...
+            }
+
+            // Confirmación y acción visual para cancelar toda la compra (UI-only)
+            function confirmCancelCompra() {
+                if (!currentCompraId) return alert('Compra no seleccionada.');
+                if (!confirm('¿Confirmas cancelar toda la compra? Esta acción marcará todos los renglones como cancelados.')) return;
+                var modalBody = document.getElementById('compra-detalles-modal-body');
+                // marcar todas las filas como canceladas
+                var rows = modalBody.querySelectorAll('tr');
+                rows.forEach(function(r){ r.classList.add('row-cancelled'); });
+                // mostrar banner de estado en la cabecera del modal
+                var header = document.querySelector('#compra-detalles-modal .modal-header');
+                if (header && !document.getElementById('cancel-banner')) {
+                    var banner = document.createElement('div');
+                    banner.id = 'cancel-banner';
+                    banner.style.padding = '8px 16px';
+                    banner.style.background = 'rgba(217,83,79,0.08)';
+                    banner.style.color = 'var(--danger,#d9534f)';
+                    banner.style.fontWeight = '600';
+                    banner.innerText = 'Compra marcada como CANCELADA (UI).';
+                    header.insertBefore(banner, header.firstChild);
+                }
+                // TODO: llamar al backend para cancelar la compra completa
+            }
+        </script>
 {% endblock %}
