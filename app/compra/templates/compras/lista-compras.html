@@ -21,7 +21,7 @@
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14.5px;">
                 <thead>
                     <tr style="border-bottom: 2px solid var(--border); color: var(--text-secondary);">
-                        <th style="padding: 12px 14px; font-weight: 600;">ID</th>
+                        <th style="padding: 12px 14px; font-weight: 600;">Pedido</th>
                         <th style="padding: 12px 14px; font-weight: 600;">Proveedor</th>
                         <th style="padding: 12px 14px; font-weight: 600;">Empleado</th>
                         <th style="padding: 12px 14px; font-weight: 600;">Fecha</th>
@@ -33,7 +33,7 @@
                 <tbody>
                     {% for compra in compras %}
                         <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
-                            <td style="padding: 14px; color: var(--text-secondary);">#{{ compra.id_compra }}</td>
+                            <td style="padding: 14px; color: var(--text-secondary);">{{ compra.id_compra }}</td>
                             <td style="padding: 14px; font-weight: 600; color: var(--text-primary);">{{ compra.proveedor.nombre }}</td>
                             <td style="padding: 14px; color: var(--text-secondary);">{{ compra.empleado.nombre }} {{ compra.empleado.apellido }}</td>
                             <td style="padding: 14px; color: var(--text-secondary);">{{ compra.fecha_compra|date:'d/m/Y H:i' }}</td>
@@ -43,6 +43,7 @@
                                 <a href="#" style="color: var(--li-blue); text-decoration: none; font-weight: 600; font-size: 13.5px;">Ver detalles</a>
                             </td>
                         </tr>
+                        <!--
                         <tr>
                             <td colspan="7" style="padding: 0 14px 18px 14px;">
                                 <div style="background: #f7f9fb; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
@@ -73,7 +74,7 @@
                                     {% endif %}
                                 </div>
                             </td>
-                        </tr>
+                        </tr>-->
                     {% empty %}
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">
