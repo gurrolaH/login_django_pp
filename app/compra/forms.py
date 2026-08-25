@@ -10,19 +10,19 @@ class CompraForm(forms.ModelForm):
         fields = [
             'proveedor',
             'empleado',
-            'estado',
+            #'estado',
             'observaciones',
         ]
         labels = {
             'proveedor': 'Proveedor',
             'empleado': 'Empleado',
-            'estado': 'Estado',
+            #'estado': 'Estado',
             'observaciones': 'Observaciones',
         }
         widgets = {
             'proveedor': forms.Select(attrs={'class': 'form-control'}),
             'empleado': forms.Select(attrs={'class': 'form-control'}),
-            'estado': forms.Select(attrs={'class': 'form-control'}),
+            #'estado': forms.Select(attrs={'class': 'form-control'}),
             'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Observaciones de la compra'}),
         }
 

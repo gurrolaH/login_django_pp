@@ -10,6 +10,8 @@ class Compra(models.Model):
     class Estado(models.TextChoices):
         PENDIENTE = 'PENDIENTE', 'Pendiente'
         RECIBIDA = 'RECIBIDA', 'Recibida'
+        RECIBIDA_PARCIAL = 'RECIBIDA_PARCIAL', 'Recibida parcial'
+        CANCELADA_PARCIAL = 'CANCELADA_PARCIAL', 'Cancelada parcial'
         CANCELADA = 'CANCELADA', 'Cancelada'
 
     id_compra = models.BigAutoField(primary_key=True)
