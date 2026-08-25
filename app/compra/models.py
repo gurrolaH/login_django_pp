@@ -66,7 +66,13 @@ class Compra(models.Model):
         return f'Compra #{self.id_compra}'
 
 
-class DetalleCompra(models.Model): # Este model permite manejar a detalle compra que es del mismo dominio de compra.
+class DetalleCompra(models.Model):
+
+    class Estado(models.TextChoices):
+        PENDIENTE = 'PENDIENTE', 'Pendiente'
+        RECIBIDA = 'RECIBIDA', 'Recibida'
+        RECHAZADA = 'RECHAZADA', 'Rechazada'  # llegó dañado o incorrecto
+        CANCELADA = 'CANCELADA', 'Cancelada'  # se canceló antes de recibir
 
     id_detalle_compra = models.BigAutoField(primary_key=True)
 
@@ -94,9 +100,21 @@ class DetalleCompra(models.Model): # Este model permite manejar a detalle compra
         decimal_places=2
     )
 
+    estado = models.CharField(
+        max_length=20,
+        choices=Estado.choices,
+        default=Estado.PENDIENTE
+    )
+
     class Meta:
         db_table = 'detalle_compra'
         ordering = ['id_detalle_compra']
+
+    def save(self, *args, **kwargs):
+        self.subtotal = (
+            self.cantidad * self.precio_unitario
+        )
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return (
