@@ -46,8 +46,8 @@
                                 </button>
                             </td>
                         </tr>
-                        <!-- Hidden: Detalles embebidos para cada compra (se muestran en modal) -->
-                        <tr style="display:none;" id="compra-detalles-{{ compra.id_compra }}">
+                        <!-- Hidden: Detalles embebidos para cada compra  -->
+                        <tr style="display:none;" id="compra-detalles-{{ compra.id_compra }}" data-cancel-url="{% url 'compra:cancelar_compra' compra.id_compra %}">
                             <td colspan="7" style="padding: 0 14px 18px 14px;">
                                 <div style="background: #f7f9fb; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
                                     <strong style="display: block; margin-bottom: 8px; color: var(--text-primary);">Detalle de compra:</strong>
@@ -63,16 +63,22 @@
                                             </thead>
                                             <tbody>
                                                 {% for detalle in compra.detalles.all %}
-                                                    <tr data-detalle-id="{{ detalle.id_detalle_compra }}">
+                                                    <tr data-detalle-id="{{ detalle.id_detalle_compra }}" class="{% if detalle.estado == DetalleCompra.Estado.CANCELADA %}row-cancelled{% endif %}">
                                                         <td style="padding: 8px 10px;">{{ detalle.producto.nombre }}</td>
                                                         <td style="padding: 8px 10px;">{{ detalle.cantidad }}</td>
                                                         <td style="padding: 8px 10px;">${{ detalle.precio_unitario }}</td>
                                                         <td style="padding: 8px 10px;">${{ detalle.subtotal }}</td>
                                                         <td style="padding: 8px 10px; text-align: right; width:72px;">
-                                                            <!-- Botón-icono para cancelar este renglón (UI) -->
-                                                            <button type="button" class="icon-cancel-row" onclick="confirmCancelDetalle(' {{ detalle.id_detalle_compra }} ', this )" title="Cancelar renglón">
-                                                                <i class="bi bi-x-circle" style="color:var(--danger,#d9534f); font-size:18px;"></i>
-                                                            </button>
+                                                            <!-- Botón-icono para cancelar este renglón -->
+                                                            {% if detalle.estado == DetalleCompra.Estado.CANCELADA %}
+                                                                <button type="button" class="icon-cancel-row" disabled title="Renglón cancelado">
+                                                                    <i class="bi bi-check-circle" style="color:var(--success,#28a745); font-size:18px;"></i>
+                                                                </button>
+                                                            {% else %}
+                                                                <button type="button" class="icon-cancel-row" data-cancel-url="{% url 'compra:cancelar_detalle' detalle.id_detalle_compra %}" onclick="confirmCancelDetalle(this)" title="Cancelar renglón">
+                                                                    <i class="bi bi-x-circle" style="color:var(--danger,#d9534f); font-size:18px;"></i>
+                                                                </button>
+                                                            {% endif %}
                                                         </td>
                                                     </tr>
                                                 {% endfor %}
@@ -119,7 +125,7 @@
             .btn-cancel-compra { display: inline-flex; align-items: center; gap:6px; padding:6px 10px; border-radius:6px; }
 
             /* Estado visual de renglón cancelado */
-            .row-cancelled { opacity: 0.5; text-decoration: line-through; }
+            .row-cancelled { background: #fdecea; color: var(--error-text); border-left: 4px solid #f1a2a0; }
 
             /* Tabla de detalles dentro del modal */
             #compra-detalles-modal table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -182,46 +188,119 @@
                 if (!hiddenRow) return;
                 var contenido = hiddenRow.querySelector('div').innerHTML;
                 body.innerHTML = contenido;
+            // Propagar la URL de cancelación completa desde el bloque oculto al botón del modal
+            var cancelUrl = hiddenRow.dataset.cancelUrl || null;
+            var cancelBtn = document.querySelector('.btn-cancel-compra');
+            if (cancelBtn && cancelUrl) cancelBtn.dataset.cancelUrl = cancelUrl;
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }
 
             // Confirmación y acción visual para cancelar un detalle (UI-only)
-            function confirmCancelDetalle(detalleId, btn) {
-                if (!confirm('¿Confirmas cancelar este renglón de la compra?')) return;
-                // Marcar visualmente la fila como cancelada
-                var row = btn.closest('tr');
-                if (row) {
-                    row.classList.add('row-cancelled');
-                    // reemplazar el icono por un indicador
-                    btn.innerHTML = '<i class="bi bi-check-circle" style="color:var(--success,#28a745); font-size:18px;"></i>';
-                    btn.disabled = true;
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
                 }
-                // TODO: aquí puedes llamar al backend con fetch para persistir la cancelación
-                // fetch('/api/compra/detalle/' + detalleId + '/cancelar/', { method: 'POST' })...
+                return cookieValue;
+            }
+
+            // Obtener token CSRF: primero intentamos leer el meta tag (recomendado),
+            // si no existe caemos al valor en la cookie.
+            function getCsrfToken() {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) {
+                    var t = meta.getAttribute('content');
+                    if (t && t !== 'NOTPROVIDED') return t;
+                }
+                return getCookie('csrftoken');
+            }
+
+            // Confirmación y acción para cancelar un detalle (hace POST al endpoint)
+            function confirmCancelDetalle(btn) {
+                if (!confirm('¿Confirmas cancelar este renglón de la compra?')) return;
+                const csrftoken = getCsrfToken();
+                // Obtener URL de cancelación desde el atributo data del botón
+                var url = btn.dataset.cancelUrl;
+                if (!url) return alert('URL de cancelación no disponible.');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({})
+                }).then(res => {
+                    if (!res.ok) return res.text().then(text => { throw { status: res.status, text: text }; });
+                    return res.json();
+                }).then(data => {
+                    if (data.success) {
+                        var row = btn.closest('tr');
+                        if (row) {
+                            row.classList.add('row-cancelled');
+                            btn.innerHTML = '<i class="bi bi-check-circle" style="color:var(--success,#28a745); font-size:18px;"></i>';
+                            btn.disabled = true;
+                        }
+                        location.reload();
+                    } else {
+                        alert((data.message ? data.message : JSON.stringify(data.errors)));
+                    }
+                }).catch(err => {
+                    console.error('Fetch error:', err);
+                    var msg = 'Error al comunicarse con el servidor.';
+                    if (err && err.status) {
+                        msg += ' Estado: ' + err.status + '.';
+                        if (err.text) msg += ' Respuesta: ' + err.text.substring(0, 300);
+                    }
+                    alert(msg);
+                });
             }
 
             // Confirmación y acción visual para cancelar toda la compra (UI-only)
             function confirmCancelCompra() {
                 if (!currentCompraId) return alert('Compra no seleccionada.');
                 if (!confirm('¿Confirmas cancelar toda la compra? Esta acción marcará todos los renglones como cancelados.')) return;
-                var modalBody = document.getElementById('compra-detalles-modal-body');
-                // marcar todas las filas como canceladas
-                var rows = modalBody.querySelectorAll('tr');
-                rows.forEach(function(r){ r.classList.add('row-cancelled'); });
-                // mostrar banner de estado en la cabecera del modal
-                var header = document.querySelector('#compra-detalles-modal .modal-header');
-                if (header && !document.getElementById('cancel-banner')) {
-                    var banner = document.createElement('div');
-                    banner.id = 'cancel-banner';
-                    banner.style.padding = '8px 16px';
-                    banner.style.background = 'rgba(217,83,79,0.08)';
-                    banner.style.color = 'var(--danger,#d9534f)';
-                    banner.style.fontWeight = '600';
-                    banner.innerText = 'Compra marcada como CANCELADA (UI).';
-                    header.insertBefore(banner, header.firstChild);
-                }
-                // TODO: llamar al backend para cancelar la compra completa
+                const csrftoken = getCsrfToken();
+                // Tomar la URL desde el atributo del botón (fue propagada en openCompraDetalles)
+                var cancelBtn = document.querySelector('.btn-cancel-compra');
+                var url = cancelBtn ? cancelBtn.dataset.cancelUrl : null;
+                if (!url) return alert('URL de cancelación no disponible.');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({})
+                }).then(res => {
+                    if (!res.ok) return res.text().then(text => { throw { status: res.status, text: text }; });
+                    return res.json();
+                }).then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert((data.message ? data.message : JSON.stringify(data.errors)));
+                    }
+                }).catch(err => {
+                    console.error('Fetch error:', err);
+                    var msg = 'Error al comunicarse con el servidor.';
+                    if (err && err.status) {
+                        msg += ' Estado: ' + err.status + '.';
+                        if (err.text) msg += ' Respuesta: ' + err.text.substring(0,300);
+                    }
+                    alert(msg);
+                });
             }
         </script>
 {% endblock %}
